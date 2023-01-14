@@ -37,7 +37,7 @@ const handler: NextApiHandler = async (req, res) => {
     await fs.mkdir(`./public/memorize/images`);
   }
   await readFile(req, true);
-  res.json({ done: 'ok' });
+  res.json({ message: 'ok' });
 };
 
 export default handler;

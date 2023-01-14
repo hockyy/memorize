@@ -32,8 +32,8 @@ export default function handler(req, res) {
         flag: 'a+',
       }
     );
-    res.status(200).json({ status: 'OK', id });
+    res.status(200).json({ message: 'OK', id });
   } else {
-    res.status(200).json({ status: 'NOT ALLOWED METHOD' });
+    res.status(200).json({ message: 'NOT ALLOWED METHOD' });
   }
 }

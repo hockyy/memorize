@@ -59,10 +59,10 @@ const Index = ({ images, text }) => {
         id="tsparticles"
         init={particlesInit}
         /*
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         // @ts-ignore */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     // @ts-ignore */
         options={particlesConfig}
       />
-      <div className={'m-10 flex flex-col justify-center items-center gap-5'}>
+      <div className={'m-10 flex flex-col items-center justify-center gap-5'}>
         {code !== '' && (
           <div>
             Successfuly submitted, your code is <strong>{code}</strong>
@@ -81,7 +81,6 @@ const Index = ({ images, text }) => {
             <button
               className={'rounded-lg bg-green-800 p-3 hover:bg-green-700'}
               onClick={() => {
-                console.log(showImages);
                 setShowImages((old) => !old);
               }}
             >
@@ -135,7 +134,7 @@ const Index = ({ images, text }) => {
             }
           >
             <ul>
-              {text.map((val, textIndex) => {
+              {text.split('\n').map((val, textIndex) => {
                 return (
                   <li className={'list-disc'} key={textIndex}>
                     {val}
@@ -152,7 +151,7 @@ const Index = ({ images, text }) => {
 
 export async function getServerSideProps(context) {
   const images = fs.readdirSync('./public/memorize/images/');
-  const text = fs.readdirSync('./public/memorize/text/');
+  const text = fs.readFileSync('./public/memorize/text.txt').toString();
   return {
     props: { images, text },
   };

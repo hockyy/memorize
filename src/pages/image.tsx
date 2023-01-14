@@ -2,10 +2,6 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import axios from 'axios';
 import imageCompression from 'browser-image-compression';
-import * as fs from 'fs';
-import type { GetServerSideProps } from 'next';
-import Link from 'next/link';
-import path from 'path';
 import React, { useCallback, useEffect, useState } from 'react';
 import { toast, ToastContainer } from 'react-toastify';
 import Particles from 'react-tsparticles';
@@ -13,11 +9,10 @@ import { loadFull } from 'tsparticles';
 import type { Engine } from 'tsparticles-engine';
 
 import { Meta } from '@/layouts/Meta';
-import { getTextFromTime } from '@/pages/index';
 import { Main } from '@/templates/Main';
 import { particlesConfig } from '@/utils/particlesConfig';
 
-const Manager = () => {
+const Image = () => {
   const [uploading, setUploading] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
   const [selectedFile, setSelectedFile] = useState<File>();
@@ -60,7 +55,7 @@ const Manager = () => {
         id="tsparticles"
         init={particlesInit}
         /*
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           // @ts-ignore */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               // @ts-ignore */
         options={particlesConfig}
       />
       <ToastContainer
@@ -106,7 +101,7 @@ const Manager = () => {
         >
           {uploading ? 'Uploading..' : 'Upload'}
         </button>
-        <div className={'text-3xl font-bold'}>Available Pictures:</div>
+        <div className={'text-3xl font-bold'}>Available Images:</div>
         <div className="mt-20 flex flex-wrap content-center items-center justify-center gap-3 text-center">
           {dirs.map((item, keyItem) => (
             <div
@@ -126,6 +121,16 @@ const Manager = () => {
                 src={`/memorize/images/${item}`}
                 alt={'naruto'}
               ></img>
+              <button
+                className={'rounded-lg bg-red-800 p-3 hover:bg-red-700'}
+                onClick={() => {
+                  axios.post('/api/remove', { filename: item }).then(() => {
+                    relist();
+                  });
+                }}
+              >
+                Delete this image
+              </button>
             </div>
           ))}
         </div>
@@ -133,4 +138,4 @@ const Manager = () => {
     </Main>
   );
 };
-export default Manager;
+export default Image;
