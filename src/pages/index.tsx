@@ -59,7 +59,7 @@ const Index = ({ images, text }) => {
         id="tsparticles"
         init={particlesInit}
         /*
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     // @ts-ignore */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         // @ts-ignore */
         options={particlesConfig}
       />
       <div className={'m-10 flex flex-col items-center justify-center gap-5'}>
@@ -117,7 +117,7 @@ const Index = ({ images, text }) => {
                         event.target.style.display = 'none';
                       }}
                       className={
-                        'unselectable w-[40vw] rounded-lg md:w-[20vw] xl:w-[15vw] '
+                        'unselectable w-[30vw] rounded-lg md:w-[20vw] xl:w-[15vw] '
                       }
                       src={`/memorize/images/${val}`}
                       alt={'naruto'}
