@@ -1,155 +1,161 @@
 import 'react-toastify/dist/ReactToastify.css';
 
-import { Card } from '@material-tailwind/react';
 import axios from 'axios';
+import * as fs from 'fs';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { FadeIn } from 'react-slide-fade-in';
-import { toast, ToastContainer } from 'react-toastify';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import Draggable from 'react-draggable';
 import Particles from 'react-tsparticles';
 import { loadFull } from 'tsparticles';
 import type { Engine } from 'tsparticles-engine';
-import Typed from 'typed.js';
 
 import { Meta } from '@/layouts/Meta';
 import { Main } from '@/templates/Main';
-import { AppConfig } from '@/utils/AppConfig';
 import { particlesConfig } from '@/utils/particlesConfig';
 
-const Index = () => {
+export const getTextFromTime = (time) => {
+  const minutes = (time - (time % 60)) / 60;
+  return `${minutes > 0 ? `${minutes} minutes` : ''} ${time % 60} seconds`;
+};
+const STOPWATCH_KEY = 'stopwatchTime';
+const Index = ({ images, text }) => {
   const router = useRouter();
+  const [timeElapsed, setTimeElapsed] = useState([0, 0]);
+  const [showImages, setShowImages] = useState(false);
+  const [code, setCode] = useState('');
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeElapsed((old) => {
+        let current = [...old];
+        if (typeof localStorage !== 'undefined') {
+          let localTime;
+          try {
+            localTime = JSON.parse(localStorage.getItem(STOPWATCH_KEY));
+            if (localTime[0] + localTime[1] > current[0] + current[1]) {
+              current = localTime;
+            }
+          } catch (e) {}
+        }
+        current[showImages ? 1 : 0] += 1;
+        localStorage.setItem(STOPWATCH_KEY, JSON.stringify(current));
+        return current;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [showImages]);
+  const resetTimer = () => {
+    localStorage.setItem(STOPWATCH_KEY, JSON.stringify([0, 0]));
+    setTimeElapsed([0, 0]);
+  };
   const particlesInit = useCallback(async (engine: Engine) => {
     await loadFull(engine);
   }, []);
-  const [prank, setPrank] = useState(false);
-  const typeTarget = useRef(null);
-
-  useEffect(() => {
-    const typed = new Typed(typeTarget.current, {
-      strings: ['&nbsp;rants', '&nbsp;thanks', '&nbsp;questions', 'thing'],
-      typeSpeed: 40,
-    });
-
-    return () => {
-      typed.destroy();
-    };
-  }, []);
-
-  const ref = useRef(null);
-
-  const handleSend = async (message) => {
-    await axios
-      .post(
-        AppConfig.backend,
-        {
-          message,
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept-Encoding': 'application/json',
-          },
-        }
-      )
-      .then((ret) => {
-        if (ret.data.message === '200') {
-          toast('Sent!!!!!!');
-        } else {
-          toast('Bruh, Hocky surely did a mistake :(');
-        }
-      })
-      .catch((err) => {});
-  };
 
   return (
-    <Main meta={<Meta title="Not Gonna Lie!" description="Hush" />}>
+    <Main meta={<Meta title="Memorize" description="Hush" />}>
       <Particles
         className={'fixed z-[-1]'}
         id="tsparticles"
         init={particlesInit}
         /*
-                    // @ts-ignore */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         // @ts-ignore */
         options={particlesConfig}
       />
-      <ToastContainer
-        position="top-right"
-        autoClose={10000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-      />
-      <div className="mx-auto flex w-full max-w-screen-md content-center justify-center text-center">
-        <img
-          className="unselectable z-10 m-5 mt-10 h-[25vh] select-none p-0"
-          src={`${router.basePath}/assets/tree.gif`}
-          alt={'Medigle logo'}
-        ></img>
-      </div>
-      <div
-        className={
-          'mx-auto flex w-[70vw] max-w-xl flex-col content-center justify-center align-middle'
-        }
-      >
-        <div
-          className={
-            'flex flex-col justify-center text-center text-lg font-bold md:text-3xl'
-          }
-        >
-          <div
-            className={'flex flex-col whitespace-pre break-words lg:flex-col'}
-          >
-            <div>You can</div>
-            <div>
-              send <a href="https://instagram.com/__hocky">Hocky &#127808;</a>{' '}
-              any
-              <span ref={typeTarget} />.
-            </div>
-            <div className={'text-blue-200'}>
-              He won&apos;t know your identity,
-            </div>
-            {prank && (
-              <div>
-                <FadeIn
-                  from="right"
-                  positionOffset={100}
-                  triggerOffset={300}
-                  delayInMilliseconds={0}
-                >
-                  or will he &#128540;?
-                </FadeIn>
-              </div>
-            )}
+      <div className={'m-10 flex flex-col justify-center items-center gap-5'}>
+        {code !== '' && (
+          <div>
+            Successfuly submitted, your code is <strong>{code}</strong>
           </div>
-        </div>
-        <div className="mt-5 flex w-[50vw] content-center justify-center place-self-center overflow-auto rounded-xl bg-white p-5 text-center text-xs text-blue-700 lg:w-[30vw] lg:text-lg">
-          <form className={'w-full'}>
-            <textarea
-              ref={ref}
-              placeholder="Over here &#128557;"
-              className={
-                'arial mb-3 w-full border border-blue-600 px-3 py-2 focus:border-blue-500 focus:ring-blue-500'
-              }
-            />
+        )}
+        <div
+          className={'flex flex-col items-center justify-center gap-3 text-xl'}
+        >
+          <div className={'flex flex-row gap-3'}>
             <button
-              onClick={() => {
-                setPrank(true);
-                handleSend(ref.current.value);
-              }}
-              type={'button'}
-              className={'w-full rounded-lg bg-blue-200 px-3 py-1'}
+              className={'rounded-lg bg-red-800 p-3 hover:bg-red-700'}
+              onClick={resetTimer}
             >
-              Send
+              Reset
             </button>
-          </form>
+            <button
+              className={'rounded-lg bg-green-800 p-3 hover:bg-green-700'}
+              onClick={() => {
+                console.log(showImages);
+                setShowImages((old) => !old);
+              }}
+            >
+              Toggle Images and Texts
+            </button>
+          </div>
+
+          <button
+            className={'rounded-lg bg-yellow-800 p-3 hover:bg-yellow-700'}
+            onClick={() => {
+              axios
+                .post(`/api/save`, {
+                  time: timeElapsed,
+                })
+                .then((response) => {
+                  setCode(response.data.id);
+                });
+            }}
+          >
+            Done Remembering
+          </button>
+          <strong>{getTextFromTime(timeElapsed[0] + timeElapsed[1])}</strong>
         </div>
+        {showImages ? (
+          <div className={'m-2 flex w-[80vw] flex-wrap gap-4'}>
+            {images.map((val, imageIndex) => {
+              return (
+                <Draggable key={imageIndex} handle={`#handle-${imageIndex}`}>
+                  <div className={''} id={`handle-${imageIndex}`}>
+                    <img
+                      onError={(event) => {
+                        // @ts-ignore
+                        // eslint-disable-next-line no-param-reassign
+                        event.target.style.display = 'none';
+                      }}
+                      className={
+                        'unselectable w-[40vw] rounded-lg md:w-[20vw] xl:w-[15vw] '
+                      }
+                      src={`/memorize/images/${val}`}
+                      alt={'naruto'}
+                    ></img>
+                  </div>
+                </Draggable>
+              );
+            })}
+          </div>
+        ) : (
+          <div
+            className={
+              'arial rounded-lg bg-blue-100 px-10 font-bold text-black'
+            }
+          >
+            <ul>
+              {text.map((val, textIndex) => {
+                return (
+                  <li className={'list-disc'} key={textIndex}>
+                    {val}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
       </div>
     </Main>
   );
 };
+
+export async function getServerSideProps(context) {
+  const images = fs.readdirSync('./public/memorize/images/');
+  const text = fs.readdirSync('./public/memorize/text/');
+  return {
+    props: { images, text },
+  };
+}
 
 export default Index;
