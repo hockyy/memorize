@@ -1,9 +1,7 @@
 import 'react-toastify/dist/ReactToastify.css';
 
 import * as fs from 'fs';
-import { useRouter } from 'next/router';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import Draggable from 'react-draggable';
+import React, { useCallback } from 'react';
 import Particles from 'react-tsparticles';
 import { loadFull } from 'tsparticles';
 import type { Engine } from 'tsparticles-engine';
@@ -13,9 +11,7 @@ import { getTextFromTime } from '@/pages/index';
 import { Main } from '@/templates/Main';
 import { particlesConfig } from '@/utils/particlesConfig';
 
-const STOPWATCH_KEY = 'stopwatchTime';
-const Index = ({ result }) => {
-  const router = useRouter();
+const Result = ({ result }) => {
   const particlesInit = useCallback(async (engine: Engine) => {
     await loadFull(engine);
   }, []);
@@ -27,7 +23,7 @@ const Index = ({ result }) => {
         id="tsparticles"
         init={particlesInit}
         /*
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               // @ts-ignore */
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   // @ts-ignore */
         options={particlesConfig}
       />
       <div className={'m-3 flex flex-col items-center justify-center gap-5'}>
@@ -84,4 +80,4 @@ export async function getServerSideProps(context) {
   };
 }
 
-export default Index;
+export default Result;
